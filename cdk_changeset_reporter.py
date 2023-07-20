@@ -34,20 +34,20 @@ class CdkChangesetReporter:
     """
 
     def __init__(self, cloud_assembly_dir: str = "cdk.out") -> None:
-        self.stacks: list[StackInfo] = []
+        self.reset_stack_selection()
         self.cloud_assembly = cx_api.CloudAssembly(
             cloud_assembly_dir,
             topo_sort=True,
         )
 
     def reset_stack_selection(self):
-        self.stacks = []
+        self.stacks = set()
 
     def add_stacks_starting_with(
         self,
         stack_prefix: str,
     ) -> None:
-        self.stacks += [
+        result = [
             StackInfo(
                 name=s.stack_name,
                 role_arn=s.lookup_role.arn.replace("${AWS::Partition}", "aws"),
@@ -56,6 +56,7 @@ class CdkChangesetReporter:
             for s in self.cloud_assembly.stacks_recursively
             if s.stack_name.startswith(stack_prefix)
         ]
+        self.stacks.update(result)
 
     def assumed_role_session(
         self, role_arn: str, base_session: botocore.session.Session = None
