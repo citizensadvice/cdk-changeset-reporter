@@ -112,8 +112,6 @@ class CdkChangesetReporter:
         """
         changes = []
         for change in reported_changes:
-            if type(change) is not dict:
-                return
             # Extract the details
             details = change["ResourceChange"]["Details"]
             # Some changes have no details
@@ -165,6 +163,8 @@ class CdkChangesetReporter:
         return f"""
 <details>
 <summary>Changeset for stack <strong>{stack_name}</strong></summary>
+
 {table.table}
+
 </details>
 """
