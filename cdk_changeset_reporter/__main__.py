@@ -10,7 +10,7 @@ if __name__ == "__main__":
     reporter = CdkChangesetReporter()
 
     for stage in argv[1:]:
-        reporter.gather_and_report(stage)
+        reporter.add_stacks_starting_with(stage)
 
     changes = reporter.gather_changes()
     reporter.report(changes)
