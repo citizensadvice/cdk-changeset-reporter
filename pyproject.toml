@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "cdk_changeset_reporter"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 aws-cdk-lib = "^2.88.0"
 boto3 = "^1.28.8"
 terminaltables = "^3.1.10"
