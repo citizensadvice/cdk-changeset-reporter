@@ -11,8 +11,7 @@ packages = [{include = "cdk_changeset_reporter"}]
 python = "^3.11"
 aws-cdk-lib = "^2.88.0"
 boto3 = "^1.28.8"
-termtables = "^0.2.4"
-
+terminaltables = "^3.1.10"
 
 [build-system]
 requires = ["poetry-core"]
