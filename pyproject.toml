@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cdk-changeset-reporter"
-version = "0.1.0"
+version = "0.2.0"
 description = "Generate human-readable Github Markdown tables for CDK changesets"
 authors = ["Citizens Advice <ca-devops@citizensadvice.org.uk>"]
 license = "Apache"
