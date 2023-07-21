@@ -4,7 +4,7 @@ import botocore
 import boto3
 import datetime
 from dateutil.tz import tzlocal
-import yaml
+from terminaltables import GithubFlavoredMarkdownTable as Table
 
 
 class StackInfo(NamedTuple):
@@ -98,11 +98,80 @@ class CdkChangesetReporter:
         return changes
 
     def report(self, changes):
-        for k, v in changes.items():
-            print(yaml.dump({k: v}))
-            print()
+        for stack_name, changes in changes.items():
+            print(self.generate_table(stack_name, changes))
 
     def gather_and_report(self, stack_selection: str):
         self.add_stacks_starting_with(stack_selection)
         changes = self.gather_changes()
         self.report(changes)
+
+    def generate_table(self, stack_name: str, reported_changes: dict):
+        """
+        Generate a table of the changes in the given stack.
+        """
+        changes = []
+        recreate = False
+        for change in reported_changes:
+            # Extract the details
+            details = change["ResourceChange"]["Details"]
+            # Some changes have no details
+            if details:
+                change_target = details[0]["Target"]["Name"]
+                change_reason = details[0]["ChangeSource"]
+                requires_recreate = details[0]["Target"]["RequiresRecreation"]
+            else:
+                change_target = change_reason = requires_recreate = ""
+
+            resource_id = change["ResourceChange"]["LogicalResourceId"]
+
+            if len(resource_id) > 85:
+                # Truncate the resource ID if it's too long. Do this in the middle as
+                # the important parts are at the beginning and end of the string
+                resource_id = resource_id[:40] + "(...)" + resource_id[-40:]
+
+            if requires_recreate == "Always" or requires_recreate == "Conditionally":
+                # If the resource requires recreation, mark the changeset as requiring recreation
+                # and add a warning to the change reason
+                recreate = True
+                requires_recreate = f"🚨{requires_recreate}🚨"
+
+            # Add the formatted details to the list of changes
+            changes.append(
+                [
+                    change["ResourceChange"]["Action"],
+                    change["ResourceChange"]["ResourceType"],
+                    resource_id,
+                    change_target,
+                    change_reason,
+                    requires_recreate,
+                ]
+            )
+        # Sort by action
+        changes.sort(key=lambda x: x[0])
+
+        # Add the headings for the table
+        changes.insert(
+            0,
+            [
+                "Action",
+                "Resource Type",
+                "Logical Resource Id",
+                "Change Target",
+                "Change Reason",
+                "Requires Recreation",
+            ],
+        )
+
+        # Generate the table
+        table = Table(changes)
+
+        # Generate the Github flavored markdown formatting
+        return f"""
+<details>
+<summary>Changeset for stack <strong>{stack_name}</strong>{' (🚨 resources requires recreation 🚨)' if recreate else ''}</summary>
+
+{table.table}
+
+</details>
+"""
