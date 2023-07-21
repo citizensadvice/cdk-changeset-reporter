@@ -175,8 +175,3 @@ class CdkChangesetReporter:
 
 </details>
 """
-
-
-def main(stage: str):
-    reporter = CdkChangesetReporter()
-    reporter.gather_and_report(stage)
