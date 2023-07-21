@@ -279,15 +279,15 @@ files = [
 ]
 
 [[package]]
-name = "termtables"
-version = "0.2.4"
-description = "Pretty tables in the terminal"
+name = "terminaltables"
+version = "3.1.10"
+description = "Generate simple tables in terminals from a nested list of strings."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=2.6"
 files = [
-    {file = "termtables-0.2.4-py3-none-any.whl", hash = "sha256:0ca860eed8957db0045020bcdfcf6620e188b0d776e8543a57ff539fcfeec26d"},
-    {file = "termtables-0.2.4.tar.gz", hash = "sha256:797c6afeb78abdab97cd5bfbbd2fc1bfbd9630052699dc881b27b334bcc6a73f"},
+    {file = "terminaltables-3.1.10-py2.py3-none-any.whl", hash = "sha256:e4fdc4179c9e4aab5f674d80f09d76fa436b96fdc698a8505e0a36bf0804a874"},
+    {file = "terminaltables-3.1.10.tar.gz", hash = "sha256:ba6eca5cb5ba02bba4c9f4f985af80c54ec3dccf94cfcd190154386255e47543"},
 ]
 
 [[package]]
@@ -338,4 +338,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f9457fbfbb0b5425b2c1db4f010505787bd14a768220a80127ee4c5967231ee2"
+content-hash = "b7e58b0c0100ef4f62d82ff66829d3aed50a261a89162d1e659ac4ca65eb7ad3"
