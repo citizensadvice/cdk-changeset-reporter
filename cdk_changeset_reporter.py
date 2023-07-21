@@ -111,6 +111,7 @@ class CdkChangesetReporter:
         Generate a table of the changes in the given stack.
         """
         changes = []
+        recreate = False
         for change in reported_changes:
             # Extract the details
             details = change["ResourceChange"]["Details"]
@@ -124,10 +125,16 @@ class CdkChangesetReporter:
 
             resource_id = change["ResourceChange"]["LogicalResourceId"]
 
-            # Truncate the resource ID if it's too long. Do this in the middle as
-            # the important parts are at the beginning and end of the string
             if len(resource_id) > 85:
+                # Truncate the resource ID if it's too long. Do this in the middle as
+                # the important parts are at the beginning and end of the string
                 resource_id = resource_id[:40] + "(...)" + resource_id[-40:]
+
+            if requires_recreate == "Always" or requires_recreate == "Conditionally":
+                # If the resource requires recreation, mark the changeset as requiring recreation
+                # and add a warning to the change reason
+                recreate = True
+                requires_recreate = f"🚨{requires_recreate}🚨"
 
             # Add the formatted details to the list of changes
             changes.append(
@@ -162,7 +169,7 @@ class CdkChangesetReporter:
         # Generate the Github flavored markdown formatting
         return f"""
 <details>
-<summary>Changeset for stack <strong>{stack_name}</strong></summary>
+<summary>Changeset for stack <strong>{stack_name}</strong>{' (🚨 resources requires recreation 🚨)' if recreate else ''}</summary>
 
 {table.table}
 
