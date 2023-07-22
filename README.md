@@ -33,7 +33,7 @@ changes = reporter.gather_changes()
 reporter.report(changes)
 ```
 
-### Method 2: Gather and Report Changes for a Single Stack
+### Method 2: Gather and Report Changes in one go
 
 You can combine the steps from Method 1 into a single function call.
 
