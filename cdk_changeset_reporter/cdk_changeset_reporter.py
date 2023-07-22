@@ -115,20 +115,19 @@ class CdkChangesetReporter:
         for change in reported_changes:
             # Extract the details
             details = change["ResourceChange"]["Details"]
-            # Some changes have no details
-            if details:
-                change_target = details[0]["Target"]["Name"]
-                change_reason = details[0]["ChangeSource"]
-                requires_recreate = details[0]["Target"]["RequiresRecreation"]
-            else:
-                change_target = change_reason = requires_recreate = ""
-
             resource_id = change["ResourceChange"]["LogicalResourceId"]
-
             if len(resource_id) > 85:
                 # Truncate the resource ID if it's too long. Do this in the middle as
                 # the important parts are at the beginning and end of the string
                 resource_id = resource_id[:40] + "(...)" + resource_id[-40:]
+
+            # Some changes have no details
+            if details:
+                change_target = details[0]["Target"].get("Name", "")
+                change_reason = details[0]["ChangeSource"]
+                requires_recreate = details[0]["Target"]["RequiresRecreation"]
+            else:
+                change_target = change_reason = requires_recreate = ""
 
             if requires_recreate == "Always" or requires_recreate == "Conditionally":
                 # If the resource requires recreation, mark the changeset as requiring recreation
