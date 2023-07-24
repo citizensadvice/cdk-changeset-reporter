@@ -3,9 +3,7 @@ from sys import argv
 
 if __name__ == "__main__":
     if len(argv) < 2:
-        raise ValueError(
-            "A stage name must be provided, e.g. develop, staging, production"
-        )
+        raise ValueError("A stack name prefix must be provided, e.g. develop, staging")
 
     reporter = CdkChangesetReporter()
 
