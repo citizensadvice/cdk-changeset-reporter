@@ -136,7 +136,8 @@ class CdkChangesetReporter:
                 change_reason = details[0]["ChangeSource"]
                 requires_recreate = details[0]["Target"]["RequiresRecreation"]
             else:
-                change_target = change_reason = requires_recreate = ""
+                change_target = change_reason = ""
+                requires_recreate = "No"
 
             if requires_recreate == "Always" or requires_recreate == "Conditionally":
                 # If the resource requires recreation, mark the changeset as requiring recreation
