@@ -106,7 +106,7 @@ class CdkChangesetReporter:
         changes = self.gather_changes()
         self.report(changes)
 
-    def truncate(max_length: int, text: str) -> str:
+    def truncate(self, max_length: int, text: str) -> str:
         if len(text) > max_length:
             text = (
                 text[: int(max_length / 2 - 2.5)]
@@ -128,7 +128,7 @@ class CdkChangesetReporter:
 
             # Truncate the resource ID if it's too long. Do this in the middle as
             # the important parts are at the beginning and end of the string
-            resource_id = self.truncate(max_length=50, text=resource_id)
+            resource_id = self.truncate(50, resource_id)
 
             # Some changes have no details
             if details:
