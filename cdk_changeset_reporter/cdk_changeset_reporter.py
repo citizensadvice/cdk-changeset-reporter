@@ -144,7 +144,7 @@ class CdkChangesetReporter:
                 # and add a warning to the change reason
                 recreate = True
                 requires_recreate = (
-                    f"### $\\textcolor{{red}}{{\\textsf{{{requires_recreate}}}}}$"
+                    f"🚨{requires_recreate}🚨"
                 )
 
             # Add the formatted details to the list of changes
