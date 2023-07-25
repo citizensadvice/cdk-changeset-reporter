@@ -106,6 +106,15 @@ class CdkChangesetReporter:
         changes = self.gather_changes()
         self.report(changes)
 
+    def truncate(max_length: int, text: str) -> str:
+        if len(text) > max_length:
+            text = (
+                text[: int(max_length / 2 - 2.5)]
+                + "(...)"
+                + text[-int(max_length / 2 - 2.5) :]
+            )
+            return str(text)
+
     def generate_table(self, stack_name: str, reported_changes: dict):
         """
         Generate a table of the changes in the given stack.
@@ -116,10 +125,10 @@ class CdkChangesetReporter:
             # Extract the details
             details = change["ResourceChange"]["Details"]
             resource_id = change["ResourceChange"]["LogicalResourceId"]
-            if len(resource_id) > 85:
-                # Truncate the resource ID if it's too long. Do this in the middle as
-                # the important parts are at the beginning and end of the string
-                resource_id = resource_id[:40] + "(...)" + resource_id[-40:]
+
+            # Truncate the resource ID if it's too long. Do this in the middle as
+            # the important parts are at the beginning and end of the string
+            resource_id = self.truncate(max_length=50, text=resource_id)
 
             # Some changes have no details
             if details:
