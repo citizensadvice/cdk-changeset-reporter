@@ -139,11 +139,11 @@ class CdkChangesetReporter:
             changes.append(
                 [
                     change["ResourceChange"]["Action"],
+                    requires_recreate,
                     change["ResourceChange"]["ResourceType"],
                     resource_id,
                     change_target,
                     change_reason,
-                    requires_recreate,
                 ]
             )
         # Sort by action
@@ -154,11 +154,11 @@ class CdkChangesetReporter:
             0,
             [
                 "Action",
+                "Requires Recreation",
                 "Resource Type",
                 "Logical Resource Id",
                 "Change Target",
                 "Change Reason",
-                "Requires Recreation",
             ],
         )
 
