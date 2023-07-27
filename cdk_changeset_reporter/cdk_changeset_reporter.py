@@ -106,6 +106,15 @@ class CdkChangesetReporter:
         changes = self.gather_changes()
         self.report(changes)
 
+    def truncate(self, max_length: int, text: str) -> str:
+        if len(text) > max_length:
+            text = (
+                text[: int(max_length / 2 - 2.5)]
+                + "(...)"
+                + text[-int(max_length / 2 - 2.5) :]
+            )
+            return str(text)
+
     def generate_table(self, stack_name: str, reported_changes: dict):
         """
         Generate a table of the changes in the given stack.
@@ -116,10 +125,10 @@ class CdkChangesetReporter:
             # Extract the details
             details = change["ResourceChange"]["Details"]
             resource_id = change["ResourceChange"]["LogicalResourceId"]
-            if len(resource_id) > 85:
-                # Truncate the resource ID if it's too long. Do this in the middle as
-                # the important parts are at the beginning and end of the string
-                resource_id = resource_id[:40] + "(...)" + resource_id[-40:]
+
+            # Truncate the resource ID if it's too long. Do this in the middle as
+            # the important parts are at the beginning and end of the string
+            resource_id = self.truncate(50, resource_id)
 
             # Some changes have no details
             if details:
@@ -127,23 +136,26 @@ class CdkChangesetReporter:
                 change_reason = details[0]["ChangeSource"]
                 requires_recreate = details[0]["Target"]["RequiresRecreation"]
             else:
-                change_target = change_reason = requires_recreate = ""
+                change_target = change_reason = ""
+                requires_recreate = "No"
 
             if requires_recreate == "Always" or requires_recreate == "Conditionally":
                 # If the resource requires recreation, mark the changeset as requiring recreation
                 # and add a warning to the change reason
                 recreate = True
-                requires_recreate = f"🚨{requires_recreate}🚨"
+                requires_recreate = (
+                    f"🚨{requires_recreate}🚨"
+                )
 
             # Add the formatted details to the list of changes
             changes.append(
                 [
                     change["ResourceChange"]["Action"],
+                    requires_recreate,
                     change["ResourceChange"]["ResourceType"],
                     resource_id,
                     change_target,
                     change_reason,
-                    requires_recreate,
                 ]
             )
         # Sort by action
@@ -154,11 +166,11 @@ class CdkChangesetReporter:
             0,
             [
                 "Action",
+                "Requires Recreation",
                 "Resource Type",
                 "Logical Resource Id",
                 "Change Target",
                 "Change Reason",
-                "Requires Recreation",
             ],
         )
 
