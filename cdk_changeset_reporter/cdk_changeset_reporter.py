@@ -5,6 +5,7 @@ import boto3
 import datetime
 from dateutil.tz import tzlocal
 from terminaltables import GithubFlavoredMarkdownTable as Table
+import logging
 
 
 class StackInfo(NamedTuple):
@@ -22,8 +23,10 @@ class CdkChangesetReporter:
         reporter = CdkChangesetReporter("/path/to/cloud_assembly_dir")
 
         # then either:
-        reporter.add_stacks_starting_with("staging")
-        reporter.add_stacks_starting_with("training")
+        reporter.add_stacks("staging")
+        reporter.add_stacks("base")
+        # to select all stacks in the cloud assembly:
+        # reporter.add_stacks("*")
         changes = reporter.gather_changes()
         reporter.report(changes)
 
@@ -33,7 +36,24 @@ class CdkChangesetReporter:
 
     """
 
-    def __init__(self, cloud_assembly_dir: str = "cdk.out") -> None:
+    def __init__(
+        self,
+        *,
+        change_set_name: str,
+        cloud_assembly_dir: str = "cdk.out",
+        log_level: str = "INFO",
+    ) -> None:
+        """
+
+        :param change_set_name: The name of the Cloudformation changeset to look for
+        :param cloud_assembly_dir: Path to the Cloud Assembly dir, defaults to "cdk.out"
+        :param log_level: Log level, defaults to INFO
+        """
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(log_level)
+        logging.basicConfig()
+
+        self.change_set_name = change_set_name
         self.reset_stack_selection()
         self.cloud_assembly = cx_api.CloudAssembly(
             cloud_assembly_dir,
@@ -43,19 +63,29 @@ class CdkChangesetReporter:
     def reset_stack_selection(self):
         self.stacks = set()
 
-    def add_stacks_starting_with(
+    def add_stacks(
         self,
-        stack_prefix: str,
+        stack_selector: str,
     ) -> None:
+        def _should_be_included(s: cx_api.CloudFormationStackArtifact) -> bool:
+            return s.stack_name.startswith(stack_selector) or stack_selector == "*"
+
+        self.logger.debug(f"Selection: {stack_selector}")
+
         result = [
             StackInfo(
                 name=s.stack_name,
-                role_arn=s.lookup_role.arn.replace("${AWS::Partition}", "aws"),
+                role_arn=s.lookup_role.arn.replace("${AWS::Partition}", "aws")
+                .replace("${AWS::AccountId}", s.environment.account)
+                .replace("${AWS::Region}", s.environment.region),
                 region=s.environment.region,
             )
             for s in self.cloud_assembly.stacks_recursively
-            if s.stack_name.startswith(stack_prefix)
+            if _should_be_included(s)
         ]
+        if not result:
+            self.logger.warn(f"No stacks found using selector: {stack_selector}")
+        self.logger.debug(f"Result: {result}")
         self.stacks.update(result)
 
     def assumed_role_session(
@@ -79,8 +109,12 @@ class CdkChangesetReporter:
     def gather_changes(
         self,
     ) -> dict[str, dict]:
+        self.logger.debug(f"Assembly: {self.cloud_assembly.directory}")
+        self.logger.debug(f"Changeset: {self.change_set_name}")
+
         changes = {}
         for stack in self.stacks:
+            self.logger.debug(f"Query: {stack}")
             session = self.assumed_role_session(role_arn=stack.role_arn)
             cfn = session.client("cloudformation", region_name=stack.region)
             change_sets = cfn.list_change_sets(StackName=stack.name)["Summaries"]
@@ -88,13 +122,16 @@ class CdkChangesetReporter:
                 # TODO ensure only cdk-owned changesets?
                 c
                 for c in change_sets
-                if c["ExecutionStatus"] == "AVAILABLE"
+                if c["ChangeSetName"] == self.change_set_name
+                and c["ExecutionStatus"] == "AVAILABLE"
             ]
             if available_change_sets:
                 changes[stack.name] = cfn.describe_change_set(
                     ChangeSetName=available_change_sets[0]["ChangeSetName"],
                     StackName=stack.name,
                 )["Changes"]
+        if not changes:
+            self.logger.warn(f"No changesets matching {self.change_set_name} found")
         return changes
 
     def report(self, changes):
@@ -102,7 +139,7 @@ class CdkChangesetReporter:
             print(self.generate_table(stack_name, changes))
 
     def gather_and_report(self, stack_selection: str):
-        self.add_stacks_starting_with(stack_selection)
+        self.add_stacks(stack_selection)
         changes = self.gather_changes()
         self.report(changes)
 
@@ -143,9 +180,7 @@ class CdkChangesetReporter:
                 # If the resource requires recreation, mark the changeset as requiring recreation
                 # and add a warning to the change reason
                 recreate = True
-                requires_recreate = (
-                    f"🚨{requires_recreate}🚨"
-                )
+                requires_recreate = f"🚨{requires_recreate}🚨"
 
             # Add the formatted details to the list of changes
             changes.append(
