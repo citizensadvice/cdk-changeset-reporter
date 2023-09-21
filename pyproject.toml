@@ -13,6 +13,9 @@ aws-cdk-lib = "^2.88.0"
 boto3 = "^1.28.8"
 terminaltables = "^3.1.10"
 
+[tool.poetry.group.dev.dependencies]
+boto3-stubs = {version = "1.28.20", extras = ["cloudformation"]}
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
