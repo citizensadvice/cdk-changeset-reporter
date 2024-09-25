@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: 'pip'
+    directory: '/'
+    reviewers:
+      - 'citizensadvice/devops'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Europe/London'
+    groups:
+      regular-updates:
+        update-types:
+          - "minor"
+          - "patch"
