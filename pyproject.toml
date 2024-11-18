@@ -9,12 +9,12 @@ packages = [{include = "cdk_changeset_reporter"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aws-cdk-lib = "^2.166.0"
-boto3 = "^1.35.57"
+aws-cdk-lib = "^2.167.1"
+boto3 = "^1.35.63"
 terminaltables = "^3.1.10"
 
 [tool.poetry.group.dev.dependencies]
-boto3-stubs = {version = "1.35.57", extras = ["cloudformation"]}
+boto3-stubs = {version = "1.35.63", extras = ["cloudformation"]}
 
 [build-system]
 requires = ["poetry-core"]
