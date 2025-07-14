@@ -2,8 +2,6 @@ version: 2
 updates:
   - package-ecosystem: 'pip'
     directory: '/'
-    reviewers:
-      - 'citizensadvice/devops'
     schedule:
       interval: 'weekly'
       day: 'monday'
